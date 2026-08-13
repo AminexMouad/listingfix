@@ -1,0 +1,10 @@
+Feed Processing Summary
+Number of records processed: 6
+Number of records successful: 2
+
+original-record-number	sku	error-code	error-type	error-message
+2	NB-SOCK-M-CHR	8541	Error	The product data provided is different from the data in the Amazon catalog for this ASIN. Your update was not applied.
+3	NB-SOCK-L-CHR	8105	Error	A value is required for the attribute 'item_name' for the product type 'SOCKS'.
+4	NB-TOTE-14-NAT	5665	Error	To add a new product you must first apply to add a new brand name. Brand 'Northbound' is not registered.
+5	NB-MUG-350-WHT	6024	Error	The value provided for 'external_product_id' is not a valid UPC. Check the length and the final check digit.
+6	NB-MUG-350-WHT	8560	Warning	The image at the URL provided could not be downloaded for main_image_url.

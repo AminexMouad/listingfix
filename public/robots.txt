@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://listingfix.aminexmouad.com/sitemap.xml

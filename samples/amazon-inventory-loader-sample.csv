@@ -1,0 +1,5 @@
+sku,product-id,product-id-type,price,minimum-seller-allowed-price,maximum-seller-allowed-price,item-condition,quantity,add-delete,will-ship-internationally,expedited-shipping,item-note,fulfillment-center-id,leadtime-to-ship
+NB-SOCK-M-CHR,712345678901,3,18.00,15.00,26.00,11,42,,,,Brand new in original packaging,DEFAULT,2
+NB-SOCK-L-CHR,712345678918,3,18.00,15.00,26.00,11,17,,,,Brand new in original packaging,DEFAULT,2
+NB-TOTE-14-NAT,712345679007,3,32.50,27.00,45.00,11,25,,,,Brand new in original packaging,DEFAULT,2
+NB-MUG-350-WHT,712345679106,3,14.00,11.50,20.00,11,63,,,,Brand new in original packaging,DEFAULT,2

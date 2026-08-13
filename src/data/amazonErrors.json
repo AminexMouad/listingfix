@@ -1,0 +1,496 @@
+[
+  {
+    "code": "5461",
+    "title": "Product type does not match the existing ASIN",
+    "severity": "blocking",
+    "category": "Category & product type",
+    "cause": "You submitted a row whose product type (feed_product_type / item_type) is different from the product type Amazon already has on file for that ASIN. Amazon will not let a seller re-classify an existing catalog item through a normal flat-file upload, so the whole row is rejected.",
+    "fix": [
+      "Open the ASIN's live detail page and note which category it actually sits in.",
+      "Download the category listings template that matches that category, not the one you guessed.",
+      "Set feed_product_type (and item_type / recommended_browse_nodes) to the values used by the live ASIN.",
+      "Re-upload with only the columns you actually need to change - sku, external_product_id, price, quantity.",
+      "If the ASIN is genuinely mis-categorised, open a Seller Support case and ask the catalog team to re-classify it; do not try to force it via a feed."
+    ],
+    "keywords": ["product type", "feed_product_type", "item_type", "category", "mismatch", "browse node"],
+    "related": ["8541", "8542", "99007"]
+  },
+  {
+    "code": "5665",
+    "title": "Brand is not registered - you must apply to add a brand name",
+    "severity": "blocking",
+    "category": "Brand & authorisation",
+    "cause": "The value in brand_name is not a brand Amazon recognises for the account creating the listing. This fires most often when a seller invents a brand for a generic product, mistypes a real brand, or tries to create a new ASIN under a brand they have not enrolled in Brand Registry.",
+    "fix": [
+      "Check the spelling and capitalisation of brand_name against the brand as it appears on other live ASINs.",
+      "If you are the brand owner, enrol the brand in Amazon Brand Registry and wait for approval before re-uploading.",
+      "If the item is genuinely unbranded, set brand_name to 'Generic' (where the category allows it) and supply a manufacturer value.",
+      "If you resell someone else's brand, do not create a new ASIN - list against the existing ASIN using external_product_id / ASIN matching.",
+      "Re-submit the feed only after the brand shows as approved; retrying immediately produces the same error."
+    ],
+    "keywords": ["brand", "brand_name", "brand registry", "not registered", "generic", "unbranded"],
+    "related": ["8026", "90202", "8016"]
+  },
+  {
+    "code": "8008",
+    "title": "The item you are creating duplicates an existing ASIN",
+    "severity": "blocking",
+    "category": "Duplicate & matching",
+    "cause": "Amazon matched your row - usually on UPC/EAN/GTIN, or on brand plus part number - to a product that already exists in the catalog. Creating a second ASIN for the same physical product is not allowed, so the create request is rejected.",
+    "fix": [
+      "Search the catalog for your UPC/EAN and for 'brand + MPN' to find the ASIN Amazon matched you to.",
+      "Switch from a create feed to an offer-only feed: supply item_sku, external_product_id (or the ASIN), price, quantity and condition, and drop all descriptive columns.",
+      "If the matched ASIN is genuinely a different product, gather proof (manufacturer page, packaging photos showing the barcode) and open a Seller Support case to have the match broken.",
+      "Do not re-run the same create feed - it will keep failing and can flag the account for duplicate-ASIN abuse."
+    ],
+    "keywords": ["duplicate", "existing asin", "already exists", "upc match", "create"],
+    "related": ["8058", "8016", "8541"]
+  },
+  {
+    "code": "8016",
+    "title": "SKU already exists in your inventory under a different ASIN",
+    "severity": "blocking",
+    "category": "Duplicate & matching",
+    "cause": "The SKU in item_sku is already mapped to another ASIN in your seller account. A SKU is a permanent pointer to one ASIN, so Amazon refuses to silently repoint it at a different product.",
+    "fix": [
+      "Run an 'All Listings' report and search for the SKU to see which ASIN it currently points at.",
+      "If the old listing is dead, delete it (Inventory Loader with add-delete = x) and wait for the deletion to process before re-adding the SKU.",
+      "If both products are real, give the new product a genuinely new SKU - SKUs are cheap, reuse is not worth the risk.",
+      "Never reuse a SKU that previously carried a different ASIN; historic reviews, FBA inventory and ad history follow the SKU."
+    ],
+    "keywords": ["sku", "duplicate sku", "already exists", "inventory", "remap"],
+    "related": ["8567", "8087", "8008"]
+  },
+  {
+    "code": "8026",
+    "title": "You are not approved to list in this category or brand",
+    "severity": "blocking",
+    "category": "Brand & authorisation",
+    "cause": "The category, sub-category or brand you are listing into is gated for your account. Amazon accepted the file format but refused the row because the account lacks selling approval.",
+    "fix": [
+      "In Seller Central go to Inventory > Add a Product, search the ASIN and click 'Listing limitations apply' to see the exact gate.",
+      "Start the approval application and upload the invoices Amazon asks for - typically 10+ units from a verifiable wholesaler, dated within the last 180 days.",
+      "Wait for the approval e-mail; re-uploading the feed before approval always reproduces the error.",
+      "For hazmat / restricted sub-types, complete the separate hazmat review before re-submitting."
+    ],
+    "keywords": ["approval", "gated", "not authorized", "restricted", "ungating", "category"],
+    "related": ["5665", "90062", "90202"]
+  },
+  {
+    "code": "8058",
+    "title": "Listing blocked by duplicate-ASIN protection",
+    "severity": "blocking",
+    "category": "Duplicate & matching",
+    "cause": "Amazon's duplicate detection thinks the row you submitted is a near-copy of an ASIN that already exists - same brand and title, or the same GTIN family - even though the identifiers are not byte-identical.",
+    "fix": [
+      "Search the catalog for your exact title and for brand + model number and confirm whether the product already exists.",
+      "If it exists, list an offer against it instead of creating a new ASIN.",
+      "If you are creating a legitimate variation (different size or colour), submit it as a child SKU under the existing parent rather than as a standalone product.",
+      "If it is genuinely new, make the differentiating attributes explicit - distinct part_number, model, size_name and colour_name - and re-submit."
+    ],
+    "keywords": ["duplicate", "blocked", "near duplicate", "variation", "parent"],
+    "related": ["8008", "8568", "8572"]
+  },
+  {
+    "code": "8087",
+    "title": "Update failed because the SKU does not exist yet",
+    "severity": "error",
+    "category": "Feed & file format",
+    "cause": "You sent a partial-update or price/quantity feed for a SKU that is not in your account. Update feeds can only modify SKUs that already exist; they will not create them.",
+    "fix": [
+      "Confirm the SKU string exactly - leading zeros, trailing spaces and case all matter.",
+      "Run an 'All Listings' report and diff your feed's SKU column against it.",
+      "If the SKU really is new, submit it with a full product-upload feed (update_delete = Update on a full template) before sending price/quantity updates.",
+      "If the SKU was deleted, note that deletion is not instant - wait for processing to finish before re-creating it."
+    ],
+    "keywords": ["sku not found", "update", "partial update", "does not exist", "price update"],
+    "related": ["8016", "21", "90000"]
+  },
+  {
+    "code": "8098",
+    "title": "Invalid fulfillment channel or fulfilment centre value",
+    "severity": "error",
+    "category": "Fulfilment & inventory",
+    "cause": "The fulfillment-center-id / fulfillment_channel value is not one Amazon recognises, or it conflicts with how the SKU is currently fulfilled - for example sending a merchant quantity for a SKU that is enrolled in FBA.",
+    "fix": [
+      "For merchant-fulfilled inventory leave fulfillment-center-id as DEFAULT.",
+      "For FBA use AMAZON_NA (or the correct regional value) and leave quantity blank - FBA quantity is controlled by what is in the warehouse, not by your feed.",
+      "Do not mix FBA and merchant rows for the same SKU in one file.",
+      "If you are converting a SKU between FBA and merchant-fulfilled, do the conversion in Seller Central first, then resume feed updates."
+    ],
+    "keywords": ["fba", "fulfillment", "fulfilment", "channel", "AMAZON_NA", "DEFAULT", "quantity"],
+    "related": ["30", "21", "8105"]
+  },
+  {
+    "code": "8105",
+    "title": "A required attribute is missing",
+    "severity": "blocking",
+    "category": "Missing & invalid values",
+    "cause": "A column that the chosen product type marks as mandatory is blank. Different product types require different attributes, so a template that worked for one category often fails in another.",
+    "fix": [
+      "Read the attribute name in the error text - the message names the exact column, for example item_name or standard_price.",
+      "Open the Data Definitions tab of the category template and filter for 'Required'.",
+      "Fill every required column; a space or a formula that resolves to blank still counts as empty.",
+      "Watch for Excel silently dropping columns when you copy rows between templates - always paste into the original template file.",
+      "Re-upload and confirm the processing report is clean before adding more rows."
+    ],
+    "keywords": ["required", "missing", "blank", "attribute", "mandatory", "empty"],
+    "related": ["8555", "13013", "18027"]
+  },
+  {
+    "code": "8115",
+    "title": "Value is not one of the accepted values for this attribute",
+    "severity": "error",
+    "category": "Missing & invalid values",
+    "cause": "The attribute is a controlled vocabulary - it only accepts values from a fixed list (for example condition_type, colour maps, unit-of-measure) - and the value you supplied is not on that list.",
+    "fix": [
+      "Open the Valid Values tab of the category template and copy the accepted value verbatim.",
+      "Match case and spacing exactly: 'New' is valid where 'new ' or 'NEW ITEM' is not.",
+      "Do not translate values - Amazon expects the English token even on some international marketplaces.",
+      "If the value you need is genuinely absent from the list, pick the closest valid value and put the detail in a bullet point instead."
+    ],
+    "keywords": ["valid values", "not accepted", "enum", "controlled", "condition_type", "invalid value"],
+    "related": ["13013", "8542", "8105"]
+  },
+  {
+    "code": "8305",
+    "title": "Main product image is missing",
+    "severity": "error",
+    "category": "Images",
+    "cause": "The product type requires main_image_url and it is empty, or the image the row points at was never successfully ingested, so the ASIN would go live with no main image.",
+    "fix": [
+      "Supply a direct https:// URL to the image file itself - the URL must end in .jpg, .jpeg, .png or .tif.",
+      "Do not use Google Drive, Dropbox share pages, or any link that returns an HTML page instead of the image bytes.",
+      "Make sure the file is publicly reachable with no login and no hotlink protection.",
+      "Meet Amazon's main-image rules: pure white background, product filling ~85% of the frame, at least 1000px on the longest side.",
+      "Re-upload; image ingestion is asynchronous, so allow up to 24 hours before deciding it failed."
+    ],
+    "keywords": ["image", "main_image_url", "missing image", "photo", "picture"],
+    "related": ["8560", "99041", "8105"]
+  },
+  {
+    "code": "8541",
+    "title": "Product data conflicts with the existing catalog record",
+    "severity": "blocking",
+    "category": "Category & product type",
+    "cause": "You are not the contributor Amazon trusts for this ASIN, and the descriptive data in your row (title, brand, bullet points, product type) differs from what is already in the catalog. Amazon keeps its own version and rejects yours rather than overwriting the detail page.",
+    "fix": [
+      "Strip your feed down to offer-only columns: item_sku, external_product_id / ASIN, price, quantity, condition_type. Remove title, description, bullets, images and product type.",
+      "Re-upload the trimmed file - offer-only rows almost always process cleanly.",
+      "If the catalog data is genuinely wrong and you own the brand, fix it through Brand Registry / A+ tooling, not through a flat file.",
+      "If you do not own the brand, report the error via Seller Support with evidence from the manufacturer's site.",
+      "Never repeatedly resubmit conflicting descriptive data - it counts as a catalog-abuse signal."
+    ],
+    "keywords": ["conflict", "catalog", "different", "existing data", "not brand owner", "title", "overwrite"],
+    "related": ["99007", "90202", "5461"]
+  },
+  {
+    "code": "8542",
+    "title": "Attribute is not valid for the product type you chose",
+    "severity": "error",
+    "category": "Category & product type",
+    "cause": "You filled in a column that does not apply to the selected feed_product_type. Flat-file templates share one spreadsheet across many product types, so a column can exist in the file yet be meaningless for your item.",
+    "fix": [
+      "Note the attribute named in the error and clear that column for the affected rows.",
+      "Check the Data Definitions tab - it lists which attributes apply to which product types.",
+      "If the attribute really matters for your product, you probably picked the wrong feed_product_type; switch to the correct one.",
+      "Avoid hand-building templates by merging columns from two different category files - that is the usual source of this error."
+    ],
+    "keywords": ["not applicable", "invalid attribute", "product type", "column", "template"],
+    "related": ["5461", "8115", "8105"]
+  },
+  {
+    "code": "8555",
+    "title": "Required attribute missing for this product type or variation",
+    "severity": "error",
+    "category": "Missing & invalid values",
+    "cause": "A conditionally-required attribute is blank. These are fields that only become mandatory in context - for example size_name once variation_theme is SizeColor, or a unit column once you supply a numeric measurement.",
+    "fix": [
+      "Read which attribute the message names and which row it is on.",
+      "For variations, make sure every child SKU supplies a value for every dimension named in variation_theme.",
+      "Any numeric measurement needs its matching unit column filled - item_weight needs item_weight_unit_of_measure.",
+      "Fill the field on the parent row too where the template requires it, then re-upload."
+    ],
+    "keywords": ["missing", "required", "variation", "size", "color", "unit of measure"],
+    "related": ["8105", "8572", "13013"]
+  },
+  {
+    "code": "8560",
+    "title": "Image URL could not be downloaded",
+    "severity": "error",
+    "category": "Images",
+    "cause": "Amazon's image fetcher could not retrieve the file at the URL you supplied - the link 404s, needs a login, is behind a CDN that blocks bots, is http rather than https, or points at a web page rather than an image file.",
+    "fix": [
+      "Paste the URL into a private browsing window - if you do not see the raw image, Amazon will not either.",
+      "Host images somewhere with plain public URLs (S3, Cloudflare R2, your own web server) and use https.",
+      "Remove query strings, spaces and non-ASCII characters from the file name.",
+      "Keep the file under 10 MB and use JPEG, PNG or TIFF; WebP and HEIC are not accepted.",
+      "Leave the image URL unchanged between retries - changing it restarts the ingestion queue."
+    ],
+    "keywords": ["image", "url", "download", "404", "https", "cdn", "main_image_url", "other_image_url"],
+    "related": ["8305", "99041"]
+  },
+  {
+    "code": "8567",
+    "title": "Duplicate SKU inside the same feed file",
+    "severity": "error",
+    "category": "Feed & file format",
+    "cause": "The same item_sku value appears on more than one row of the file you uploaded. Amazon cannot tell which row should win, so it rejects the duplicates.",
+    "fix": [
+      "Sort by the SKU column in your spreadsheet and use conditional formatting to highlight duplicates.",
+      "Keep one row per SKU - if you were adding a second image or a second attribute, put it in the extra columns of the same row.",
+      "Watch for trailing spaces: 'ABC-1' and 'ABC-1 ' look identical on screen but only one survives Amazon's trim.",
+      "Re-export and re-upload once the SKU column is unique."
+    ],
+    "keywords": ["duplicate sku", "same file", "repeated", "rows", "feed"],
+    "related": ["8016", "90000"]
+  },
+  {
+    "code": "8568",
+    "title": "Parent SKU referenced by a child does not exist",
+    "severity": "error",
+    "category": "Variations",
+    "cause": "A child row points at a parent_sku that Amazon cannot find - either the parent row is missing from the file, it is spelled differently, or the parent failed to process while the child succeeded.",
+    "fix": [
+      "Put the parent row physically above its children in the same file and upload them together.",
+      "Copy-paste the parent SKU into the children rather than retyping it.",
+      "On the parent row set parent_child = parent, leave parent_sku blank, and leave price, quantity and external_product_id blank.",
+      "On each child row set parent_child = child, parent_sku = the parent's SKU, relationship_type = variation.",
+      "If the parent already exists live, confirm it is still active - a suppressed parent orphan-ends its children."
+    ],
+    "keywords": ["parent", "child", "parent_sku", "variation", "relationship_type", "family"],
+    "related": ["8572", "8058", "8555"]
+  },
+  {
+    "code": "8572",
+    "title": "Variation theme is missing or invalid",
+    "severity": "error",
+    "category": "Variations",
+    "cause": "variation_theme is blank, misspelled, or not a theme the product type supports. Each category defines its own themes (SizeColor, ColorName, SizeName, Style...), and the value has to match one exactly.",
+    "fix": [
+      "Open the Valid Values tab and copy the theme string exactly, including capitalisation: 'SizeColor', not 'Size-Color'.",
+      "Set the same variation_theme on the parent and on every child.",
+      "Fill in every dimension the theme names - SizeColor requires both size_name and color_name on each child.",
+      "Give each child a unique combination; two children with the same size and colour will collide.",
+      "If the theme you want is not offered in the category, restructure the family or list the items separately."
+    ],
+    "keywords": ["variation_theme", "sizecolor", "variation", "theme", "size", "color"],
+    "related": ["8568", "8555", "8058"]
+  },
+  {
+    "code": "13013",
+    "title": "Value is invalid for this attribute",
+    "severity": "error",
+    "category": "Missing & invalid values",
+    "cause": "The attribute has a value, but the value fails validation - wrong data type, wrong format, out of range, or carrying units inside a numeric field.",
+    "fix": [
+      "Numeric fields must contain digits only: write 12.99, not '$12.99' or '12,99'.",
+      "Put units in the dedicated unit column, never in the value column.",
+      "Set the spreadsheet column format to Text before typing identifiers so Excel does not convert 0071 to 71 or a code to scientific notation.",
+      "Dates must be ISO format (YYYY-MM-DD).",
+      "Strip line breaks, tabs and smart quotes pasted in from Word or a web page."
+    ],
+    "keywords": ["invalid", "format", "number", "currency", "date", "excel", "scientific notation"],
+    "related": ["8115", "8105", "18027"]
+  },
+  {
+    "code": "18027",
+    "title": "Standard price is required",
+    "severity": "error",
+    "category": "Pricing",
+    "cause": "The standard_price / price column is blank on a row that creates or updates an offer. An offer cannot exist without a price.",
+    "fix": [
+      "Fill standard_price for every offer row.",
+      "Leave price blank only on parent rows of a variation family - parents carry no offer.",
+      "Use a plain decimal with a dot, no currency symbol and no thousands separator.",
+      "If you use Business Pricing, remember business_price does not substitute for standard_price."
+    ],
+    "keywords": ["price", "standard_price", "missing price", "required", "offer"],
+    "related": ["18029", "8105", "13013"]
+  },
+  {
+    "code": "18029",
+    "title": "Price is outside the allowed range",
+    "severity": "error",
+    "category": "Pricing",
+    "cause": "The submitted price trips Amazon's fair-pricing or error-pricing guards - it is far below or far above the recent price for the ASIN, or outside your configured min/max seller allowed price.",
+    "fix": [
+      "Check the price for a misplaced decimal - 9.99 keyed as 999 or 0.99 is the usual cause.",
+      "Widen or clear minimum-seller-allowed-price and maximum-seller-allowed-price if your legitimate new price falls outside them.",
+      "For a genuinely large price change, move in steps rather than one jump.",
+      "If the price is correct and still blocked, use Seller Central's pricing health page to confirm the listing is not flagged as a potential pricing error."
+    ],
+    "keywords": ["price", "too high", "too low", "fair pricing", "min price", "max price", "range"],
+    "related": ["18027", "13013"]
+  },
+  {
+    "code": "6024",
+    "title": "Product ID (UPC/EAN/GTIN) is not valid",
+    "severity": "blocking",
+    "category": "Product identifiers",
+    "cause": "The external_product_id fails a checksum or length test, or does not match the declared external_product_id_type. Very often the real cause is Excel stripping a leading zero or converting a 13-digit number to scientific notation.",
+    "fix": [
+      "Format the identifier column as Text before pasting, then re-enter the code so leading zeros survive.",
+      "Check the length: UPC = 12 digits, EAN = 13, ISBN-13 = 13, ASIN = 10 alphanumeric.",
+      "Verify the final check digit with a GTIN calculator before uploading.",
+      "Make sure external_product_id_type matches what you supplied (UPC, EAN, GTIN, ASIN).",
+      "Only use barcodes issued to you by GS1 - recycled or resold codes are rejected and can trigger account review."
+    ],
+    "keywords": ["upc", "ean", "gtin", "barcode", "product id", "check digit", "leading zero", "isbn"],
+    "related": ["6045", "8008", "13013"]
+  },
+  {
+    "code": "6045",
+    "title": "Product ID missing - GTIN exemption required",
+    "severity": "blocking",
+    "category": "Product identifiers",
+    "cause": "You left external_product_id blank in a category that requires a barcode, and the account does not hold a GTIN exemption for that brand and category.",
+    "fix": [
+      "Buy legitimate GS1 barcodes if the product will be sold widely - this is the durable fix.",
+      "Otherwise apply for a GTIN exemption in Seller Central (Catalog > Add Products > Apply for a GTIN exemption) for the exact brand plus category pair.",
+      "Approval is per brand and per category - an exemption for one category does not carry to another.",
+      "After approval, re-upload leaving external_product_id blank; do not invent a placeholder code.",
+      "For handmade or private-label goods, keep the supporting brand evidence on file - Amazon re-checks."
+    ],
+    "keywords": ["gtin", "exemption", "no barcode", "upc missing", "handmade", "private label"],
+    "related": ["6024", "5665"]
+  },
+  {
+    "code": "21",
+    "title": "Inventory Loader - SKU not found in your inventory",
+    "severity": "error",
+    "category": "Fulfilment & inventory",
+    "cause": "An Inventory Loader row references a SKU that does not exist in the account. Inventory Loader only adjusts existing offers; it cannot create products.",
+    "fix": [
+      "Create the product first with a category flat file or Add a Product, then use Inventory Loader for quantity and price.",
+      "Compare your SKU column against a fresh 'All Listings' report - case and whitespace differences are the usual culprit.",
+      "If the SKU was recently deleted, allow processing to complete before re-using it.",
+      "Check you are uploading against the right marketplace - SKUs are per-marketplace."
+    ],
+    "keywords": ["inventory loader", "sku not found", "quantity", "does not exist", "21"],
+    "related": ["8087", "30", "8016"]
+  },
+  {
+    "code": "30",
+    "title": "Inventory Loader - invalid quantity value",
+    "severity": "error",
+    "category": "Fulfilment & inventory",
+    "cause": "The quantity column is not a plain non-negative whole number, or a quantity was supplied for a SKU that Amazon fulfils (FBA), where stock levels are controlled by the warehouse.",
+    "fix": [
+      "Use whole numbers only - no decimals, commas, spaces or text such as 'in stock'.",
+      "Use 0 to zero out a listing; leave the field blank only when you intend no change.",
+      "For FBA SKUs leave quantity empty - FBA stock is not settable from a feed.",
+      "Set add-delete to blank for an update, or x to delete; do not use it to signal quantity."
+    ],
+    "keywords": ["quantity", "inventory loader", "invalid", "number", "stock", "add-delete"],
+    "related": ["21", "8098", "13013"]
+  },
+  {
+    "code": "90000",
+    "title": "Feed could not be processed - file is malformed",
+    "severity": "blocking",
+    "category": "Feed & file format",
+    "cause": "Amazon could not parse the file at all. Typical reasons: the two template header rows were deleted, the file was saved as .xlsx when a tab-delimited .txt was expected, the wrong feed type was chosen at upload, or the encoding mangled the header row.",
+    "fix": [
+      "Always start from a freshly downloaded template and paste your data into it - never rebuild the header rows by hand.",
+      "Keep both header rows intact: the template version row and the machine-readable field-name row.",
+      "Save as 'Text (Tab delimited) (*.txt)' if you are uploading the .txt variant, and pick the matching feed type in the upload dropdown.",
+      "Use UTF-8 encoding; Windows-1252 files with accented characters often fail here.",
+      "Test with 2-3 rows before uploading thousands."
+    ],
+    "keywords": ["feed", "malformed", "parse", "header", "tab delimited", "encoding", "utf-8", "template"],
+    "related": ["4000001", "8567", "8087"]
+  },
+  {
+    "code": "90062",
+    "title": "Restricted product - listing is not permitted",
+    "severity": "blocking",
+    "category": "Brand & authorisation",
+    "cause": "The item falls into a restricted-products policy (hazmat, pesticides, medical devices, recalled goods, certain electronics) and cannot be listed without a specific approval, or cannot be listed at all.",
+    "fix": [
+      "Read Amazon's Restricted Products policy page for the exact sub-category involved.",
+      "If an approval path exists, submit the required compliance documents (safety data sheet, certification, licence) and wait for the decision.",
+      "Check whether the restriction is marketplace-specific - an item may be sellable in one country and banned in another.",
+      "If no approval path exists, remove the SKU from your feed; repeated attempts risk enforcement against the account."
+    ],
+    "keywords": ["restricted", "hazmat", "prohibited", "compliance", "policy", "banned"],
+    "related": ["8026", "90202"]
+  },
+  {
+    "code": "90202",
+    "title": "Only the brand owner can update this ASIN",
+    "severity": "blocking",
+    "category": "Brand & authorisation",
+    "cause": "The ASIN is brand-gated for content edits. Amazon accepts descriptive changes only from the Brand Registry owner, so a reseller's title, bullet or image edits are discarded.",
+    "fix": [
+      "Send offer-only data: SKU, product ID, price, quantity, condition. Remove every descriptive column.",
+      "If you own the brand, complete Brand Registry enrolment and make sure the account you are uploading from is linked to it.",
+      "To get a factual error fixed on someone else's ASIN, use the 'Report a catalog error' flow with manufacturer evidence.",
+      "Accept that images, A+ content and titles on branded ASINs are not editable by resellers."
+    ],
+    "keywords": ["brand owner", "not authorized", "update", "brand registry", "reseller", "content"],
+    "related": ["8541", "99007", "5665"]
+  },
+  {
+    "code": "99001",
+    "title": "Category-specific data failed validation",
+    "severity": "error",
+    "category": "Category & product type",
+    "cause": "One or more category-specific attributes (the columns unique to that template) did not pass the category's own validation rules - a required combination is incomplete, or two attributes contradict each other.",
+    "fix": [
+      "Read the full processing report; this error usually names the offending attribute in the message text.",
+      "Check the Data Definitions tab for that attribute's dependency rules - some fields are only valid together.",
+      "Remove optional category attributes you are unsure about and re-upload with a minimal row, then add fields back a few at a time.",
+      "Confirm you are on the current template version - Amazon retires attributes without warning."
+    ],
+    "keywords": ["category", "validation", "attributes", "template version", "dependency"],
+    "related": ["8542", "8115", "8105"]
+  },
+  {
+    "code": "99007",
+    "title": "Your contribution conflicts with the catalog and was not accepted",
+    "severity": "blocking",
+    "category": "Category & product type",
+    "cause": "Amazon compared your descriptive data against the trusted record for the ASIN, found differences, and kept its own version. The feed reports as processed but nothing you submitted was applied.",
+    "fix": [
+      "Treat this as informational if the offer went live - your price and quantity were applied even though the content was not.",
+      "To stop it recurring, send offer-only rows for ASINs you do not own.",
+      "If your data is correct and the catalog is wrong, submit a catalog-error report with manufacturer evidence rather than re-feeding.",
+      "If you own the brand, enrol in Brand Registry - contributions from the brand owner win these conflicts."
+    ],
+    "keywords": ["conflict", "contribution", "not accepted", "catalog", "ignored", "no change"],
+    "related": ["8541", "90202", "5461"]
+  },
+  {
+    "code": "99041",
+    "title": "Image does not meet Amazon's requirements",
+    "severity": "warning",
+    "category": "Images",
+    "cause": "The image was fetched successfully but failed a quality check - too small, wrong aspect, non-white main-image background, or it contains text, watermarks, borders or additional props that Amazon does not allow on the main image.",
+    "fix": [
+      "Main images: pure white (RGB 255,255,255) background, product filling about 85% of the frame, no text, logos, watermarks or borders.",
+      "Use at least 1000px on the longest side so zoom works; 1600px+ is safer.",
+      "Keep to JPEG, PNG or TIFF in sRGB; CMYK files are commonly rejected.",
+      "Move lifestyle shots, infographics and packaging text to other_image_url slots where they are allowed.",
+      "Re-upload the corrected file at a new URL if the old one was already ingested."
+    ],
+    "keywords": ["image", "quality", "white background", "watermark", "1000px", "resolution", "sRGB"],
+    "related": ["8560", "8305"]
+  },
+  {
+    "code": "4000001",
+    "title": "Feed rejected - XML or file structure error",
+    "severity": "blocking",
+    "category": "Feed & file format",
+    "cause": "The feed document itself is invalid: broken XML for API submissions, an unescaped special character, a truncated upload, or an empty file. Nothing inside was evaluated.",
+    "fix": [
+      "Validate the document before sending - well-formed XML, correct envelope, matching open and close tags.",
+      "Escape &, < and > inside any text field (& becomes &amp;).",
+      "Strip control characters and stray null bytes copied in from other systems.",
+      "Confirm the upload finished - a truncated file produced by a timed-out transfer looks like a structure error.",
+      "Send a single-row test document to isolate whether the problem is the envelope or the data."
+    ],
+    "keywords": ["xml", "feed", "structure", "escape", "ampersand", "api", "envelope", "truncated"],
+    "related": ["90000", "8567"]
+  }
+]

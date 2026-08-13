@@ -35,19 +35,21 @@ function RelatedList({ error }: { error: AmazonError }) {
 
 function Detail({ error }: { error: AmazonError }) {
   const path = `/amazon-error/${error.code}`
-  const title = `Amazon Error ${error.code}: ${error.title} — Cause & Fix | ${SITE.name}`
-  const description = `Amazon flat-file error ${error.code} means: ${error.title}. ${error.cause.slice(0, 110)}… See the step-by-step fix.`
+  const title = `How to Fix Amazon Error ${error.code} (${error.title}) — Step-by-Step | ${SITE.name}`
+  const description = `Amazon flat-file error ${error.code} means: ${error.title}. ${error.cause.slice(0, 110)}… Here’s the step-by-step fix to get your listing processing.`
+  const keywords = [`amazon error ${error.code}`, `error ${error.code} amazon`, `fix amazon error ${error.code}`, `amazon flat file error ${error.code}`, ...error.keywords].join(', ')
 
   useSeo({
     title,
     description,
     path,
+    keywords,
     jsonLd: {
       '@context': 'https://schema.org',
       '@graph': [
         {
           '@type': 'TechArticle',
-          headline: `Amazon flat-file error ${error.code}: ${error.title}`,
+          headline: `How to fix Amazon flat-file error ${error.code}: ${error.title}`,
           description: error.cause,
           url: absoluteUrl(path),
           articleSection: error.category,

@@ -5,6 +5,8 @@ export interface SeoOptions {
   title: string
   description: string
   path: string
+  /** Comma-separated meta keywords (optional; baked into static HTML by prerender too). */
+  keywords?: string
   /** JSON-LD object graph rendered into a script tag. */
   jsonLd?: unknown
   noIndex?: boolean
@@ -25,7 +27,7 @@ function setMeta(selector: string, attr: 'name' | 'property', key: string, conte
  * the same tags into a static HTML file per route, so crawlers that do not run
  * JavaScript still get the right title, description and canonical.
  */
-export function useSeo({ title, description, path, jsonLd, noIndex }: SeoOptions) {
+export function useSeo({ title, description, path, keywords, jsonLd, noIndex }: SeoOptions) {
   // Pages build their JSON-LD inline, so compare by value instead of identity.
   const jsonLdText = jsonLd ? JSON.stringify(jsonLd) : ''
 
@@ -35,6 +37,7 @@ export function useSeo({ title, description, path, jsonLd, noIndex }: SeoOptions
 
     setMeta('meta[name="description"]', 'name', 'description', description)
     setMeta('meta[name="robots"]', 'name', 'robots', noIndex ? 'noindex, follow' : 'index, follow')
+    if (keywords) setMeta('meta[name="keywords"]', 'name', 'keywords', keywords)
     setMeta('meta[property="og:title"]', 'property', 'og:title', title)
     setMeta('meta[property="og:description"]', 'property', 'og:description', description)
     setMeta('meta[property="og:url"]', 'property', 'og:url', url)
@@ -61,5 +64,5 @@ export function useSeo({ title, description, path, jsonLd, noIndex }: SeoOptions
       script.textContent = jsonLdText
       document.head.appendChild(script)
     }
-  }, [title, description, path, jsonLdText, noIndex])
+  }, [title, description, keywords, path, jsonLdText, noIndex])
 }

@@ -164,11 +164,12 @@ routes.push({
 for (const error of errors) {
   routes.push({
     path: `/amazon-error/${error.code}`,
-    title: `Amazon Error ${error.code}: ${error.title} — Cause & Fix | ${site.name}`,
-    description: `Amazon flat-file error ${error.code} means: ${error.title}. ${error.cause.slice(0, 110)}… See the step-by-step fix.`,
+    title: `How to Fix Amazon Error ${error.code} (${error.title}) — Step-by-Step | ${site.name}`,
+    description: `Amazon flat-file error ${error.code} means: ${error.title}. ${error.cause.slice(0, 110)}… Here’s the step-by-step fix to get your listing processing.`,
     keywords: [
       `amazon error ${error.code}`,
       `error ${error.code} amazon`,
+      `fix amazon error ${error.code}`,
       `amazon flat file error ${error.code}`,
       ...error.keywords,
     ].join(', '),
@@ -179,7 +180,7 @@ for (const error of errors) {
       '@graph': [
         {
           '@type': 'TechArticle',
-          headline: `Amazon flat-file error ${error.code}: ${error.title}`,
+          headline: `How to fix Amazon flat-file error ${error.code}: ${error.title}`,
           description: error.cause,
           url: url(`/amazon-error/${error.code}`),
           articleSection: error.category,
@@ -201,6 +202,40 @@ for (const error of errors) {
       <p><a href="/tools/amazon-error-decode">All Amazon flat-file error codes</a></p>`,
   })
 }
+
+/* ---------- category hub ---------- */
+const categories = [...new Set(errors.map((e) => e.category))].sort()
+routes.push({
+  path: '/amazon-errors/',
+  title: `Amazon Flat-File Error Codes by Category — ${errors.length} Code Fixes | ${site.name}`,
+  description:
+    'Browse Amazon flat-file error codes grouped by category — brand, product type, duplicate & matching, feed format, images, identifiers, pricing and more. Each code has a plain-English explanation and a step-by-step fix. Free.',
+  keywords:
+    'amazon flat file errors, amazon product upload errors, amazon inventory errors, amazon error codes list, amazon catalog errors by category, fix amazon listing errors',
+  changefreq: 'monthly',
+  priority: '0.8',
+  jsonLd: {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Amazon flat-file error codes by category',
+    numberOfItems: errors.length,
+    itemListElement: errors.map((e, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: url(`/amazon-error/${e.code}`),
+      name: `How to fix Amazon error ${e.code} — ${e.title}`,
+    })),
+  },
+  body: `<h1>Amazon flat-file error codes by category</h1>${categories
+    .map(
+      (cat) =>
+        `<h2>${esc(cat)}</h2><ul>${errors
+          .filter((e) => e.category === cat)
+          .map((e) => `<li><a href="/amazon-error/${e.code}">Error ${e.code} — ${esc(e.title)}</a></li>`)
+          .join('')}</ul>`,
+    )
+    .join('')}`,
+})
 
 /* ---------- tool B + schemas ---------- */
 routes.push({

@@ -81,6 +81,9 @@ export default function Home() {
               <Link className="btn btn-primary" to="/tools/amazon-error-decode">
                 Open the decoder
               </Link>
+              <Link className="btn" to="/amazon-errors/">
+                Browse by category
+              </Link>
             </article>
 
             <article className="tool-card">

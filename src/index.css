@@ -804,3 +804,31 @@ td code {
     padding: 2.25rem 0 1.75rem;
   }
 }
+
+/* ---------- Ko-fi support banner ---------- */
+.kofi-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  background: var(--accent-soft);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.kofi-banner-text {
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.kofi-widget {
+  display: inline-flex;
+  align-items: center;
+}
+.kofi-widget .btn-container,
+.kofi-widget .kofi-button {
+  margin: 0;
+}
